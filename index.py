@@ -84,8 +84,8 @@ class Pycode:  # 功能类
     def Timed_task(self):  # 定时任务
         pass
 
-    def Colck_msg(self, xueyuan, zhuanye, banji):  # 查看打卡信息，需要教师的登录信息
-        url = 'http://zhcx.scitc.com.cn/weixin/HealthTj_Student.php?YearName=2020&DepartName='+xueyuan+'&SpeciName='+zhuanye+'&ClassName='+ banji
+    def Colck_msg(self, nianji, xueyuan, zhuanye, banji):  # 查看打卡信息，需要教师的登录信息
+        url = 'http://zhcx.scitc.com.cn/weixin/HealthTj_Student.php?YearName=' + nianji + '&DepartName=' + xueyuan + '&SpeciName=' + zhuanye + '&ClassName=' + banji
         print(url)
         header = {
             'host': 'zhcx.scitc.com.cn',
@@ -131,18 +131,19 @@ def Info_processing(recv_json):  # 消息处理函数
     if '查看打卡情况' in unquote(recv_json['MQ_msg']):
         index = unquote(recv_json['MQ_msg']).split("+")
         print(index)
-        zhuanye = index[2]
+        nianji = index[1]
+        zhuanye = index[3]
         print(zhuanye)
-        banji = index[3]
+        banji = index[4]
         print(banji)
-        xueyuan = index[1]
+        xueyuan = index[2]
         print(xueyuan)
         data = {
             'c1': '3574515911',
             'c2': 2,
             'c3': recv_json['MQ_fromID'],
             'c4': recv_json['MQ_fromQQ'],
-            'c5': Pycode(recv_json).Colck_msg(xueyuan, zhuanye, banji)
+            'c5': Pycode(recv_json).Colck_msg(nianji, xueyuan, zhuanye, banji)
         }
         Robot('Api_SendMsg', token, data).POST_DO()
 
