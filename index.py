@@ -1,10 +1,11 @@
-import requests
 import json
 import threading
-import pandas as pd
-import numpy
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import unquote
+
+import numpy
+import pandas as pd
+import requests
 
 global Durl, Furl, ip_port, token, API_port, callback_port
 Durl = 'http://localhost:9998/MyQQHTTPAPI'
@@ -84,9 +85,16 @@ class Pycode:  # 功能类
     def Timed_task(self):  # 定时任务
         pass
 
-    def Colck_msg(self, nianji, xueyuan, zhuanye, banji):  # 查看打卡信息，需要教师的登录信息
-        url = 'http://zhcx.scitc.com.cn/weixin/HealthTj_Student.php?YearName=' + nianji + '&DepartName=' + xueyuan + '&SpeciName=' + zhuanye + '&ClassName=' + banji
-        print(url)
+    def Colck_msg(self, banji):  # 查看打卡信息，需要教师的登录信息
+        date = {
+            '信安20-1': 'http://zhcx.scitc.com.cn/weixin/HealthTj_Student.php?YearName=2020&DepartName=网络与通信学院&SpeciName=信息安全与管理&ClassName=信安20-1',
+            '信安20-2': 'http://zhcx.scitc.com.cn/weixin/HealthTj_Student.php?YearName=2020&DepartName=网络与通信学院&SpeciName=信息安全与管理&ClassName=信安20-2',
+            '信安20-3': 'http://zhcx.scitc.com.cn/weixin/HealthTj_Student.php?YearName=2020&DepartName=网络与通信学院&SpeciName=信息安全与管理&ClassName=信安20-3',
+            '计网20-1': 'http://zhcx.scitc.com.cn/weixin/HealthTj_Student.php?YearName=2020&DepartName=网络与通信学院&SpeciName=计算机网络技术&ClassName=计网20-1',
+            '计网20-2': 'http://zhcx.scitc.com.cn/weixin/HealthTj_Student.php?YearName=2020&DepartName=网络与通信学院&SpeciName=计算机网络技术&ClassName=计网20-2',
+        }
+
+        print(date[banji])
         header = {
             'host': 'zhcx.scitc.com.cn',
             'Upgrade-Insecure-Requests': '1',
@@ -95,12 +103,12 @@ class Pycode:  # 功能类
             'Referer': 'http://zhcx.scitc.com.cn/weixin/HealthTj_Student.php',
             'Accept-Encoding': 'gzip, deflate',
             'Accept-Language': 'zh-CN,en-US;q=0.9',
-            'Cookie': '记得改这里',
+            'Cookie': 'PHPSESSID=0dp2dvvoj6uvgnqhi2ca87ce8r',
             'X-Requested-With': 'com.tencent.mm',
             'Connection': 'close'
         }
 
-        resp = requests.post(url, headers=header)
+        resp = requests.post(date[banji], headers=header)
         index = pd.read_html(resp.text)[3]
         resp.close()
         data_array = numpy.array(index)
@@ -131,19 +139,14 @@ def Info_processing(recv_json):  # 消息处理函数
     if '查看打卡情况' in unquote(recv_json['MQ_msg']):
         index = unquote(recv_json['MQ_msg']).split("+")
         print(index)
-        nianji = index[1]
-        zhuanye = index[3]
-        print(zhuanye)
-        banji = index[4]
+        banji = index[1]
         print(banji)
-        xueyuan = index[2]
-        print(xueyuan)
         data = {
             'c1': '3574515911',
             'c2': 2,
             'c3': recv_json['MQ_fromID'],
             'c4': recv_json['MQ_fromQQ'],
-            'c5': Pycode(recv_json).Colck_msg(nianji, xueyuan, zhuanye, banji)
+            'c5': Pycode(recv_json).Colck_msg(banji)
         }
         Robot('Api_SendMsg', token, data).POST_DO()
 
@@ -177,11 +180,10 @@ def global_set():
 def debug(token):
     data = {
         'c1': '3574515911',
-        'c2': 1,
-        'c3': '',
-        'c4': '2270545457',
-        'c5': 'hello word debug！！！'
-
+        'c2': 2,
+        'c3': '1165073353',
+        'c4': '1165073353',
+        'c5': 'v0.1版本更新内容\n简化查询指令，原 查看打卡情况 二级学院+专业+班级 更改为 查看打卡情况 班级\n例如查看信安20-2 就可输入:查看打卡情况 信安20-2\n注:目前仅支持信安1，2，3班加计网1.2班'
     }
     Robot('Api_SendMsg', token, data).POST_DO()
 
